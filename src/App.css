@@ -147,9 +147,10 @@
 .hero-img {
   width: 100%;
   max-width: 440px;
-  border-radius: 24px;
   object-fit: cover;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: none;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at center, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 70% at center, #000 40%, transparent 100%);
 }
 
 /* ===== LEAD FORM ===== */
@@ -441,6 +442,9 @@
 }
 
 .store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.7rem 2rem;
   background: #1d1d1f;
   color: #fff;
@@ -449,6 +453,10 @@
   font-size: 0.95rem;
   transition: all 0.3s;
   text-decoration: none;
+}
+
+.store-btn svg {
+  flex-shrink: 0;
 }
 
 .store-btn:hover {

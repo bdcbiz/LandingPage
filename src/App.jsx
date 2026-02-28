@@ -245,6 +245,9 @@ function LeadForm() {
         country_code: countryCode,
         username: phone.replace(/^0/, ''),
         first_name: firstName,
+        father_name: fatherName,
+        grandfather_name: grandfatherName,
+        role: 'teacher',
       }
       const res = await fetch(API.registerComplete, {
         method: 'POST',
@@ -305,7 +308,7 @@ function LeadForm() {
         throw new Error(data.message || 'حدث خطأ، حاول مرة أخرى')
       }
       // Complete onboarding
-      await fetch(API.onboardingComplete, { method: 'POST', headers: authHeaders })
+      await fetch(API.onboardingComplete, { method: 'POST', headers: authHeaders, body: JSON.stringify({ role: 'teacher' }) })
       setStep('success')
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
@@ -349,8 +352,14 @@ function LeadForm() {
         <div className="form-group">
           <input type="text" placeholder="الاسم الأول" required value={firstName} onChange={e => setFirstName(e.target.value)} />
         </div>
+        <div className="form-group">
+          <input type="text" placeholder="اسم الأب" required value={fatherName} onChange={e => setFatherName(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <input type="text" placeholder="اسم الجد" required value={grandfatherName} onChange={e => setGrandfatherName(e.target.value)} />
+        </div>
         {error && <p className="form-error">{error}</p>}
-        <button type="submit" className="btn-submit" disabled={loading || !firstName.trim()}>{loading ? 'جاري التسجيل...' : 'تسجيل'}</button>
+        <button type="submit" className="btn-submit" disabled={loading || !firstName.trim() || !fatherName.trim() || !grandfatherName.trim()}>{loading ? 'جاري التسجيل...' : 'تسجيل'}</button>
       </form>
     )
   }
@@ -359,17 +368,7 @@ function LeadForm() {
   if (step === 'info') {
     return (
       <form className="form-card info-card" onSubmit={handleInfoSubmit}>
-        <h3>أكمل بياناتك</h3>
-
-        <div className="form-group">
-          <input type="text" placeholder="الاسم الأول" required value={firstName} onChange={e => setFirstName(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <input type="text" placeholder="اسم الأب" required value={fatherName} onChange={e => setFatherName(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <input type="text" placeholder="اسم الجد" required value={grandfatherName} onChange={e => setGrandfatherName(e.target.value)} />
-        </div>
+        <h3>اختر تخصصك</h3>
 
         <div className="form-group">
           <label className="form-label">النظام التعليمي</label>
@@ -411,8 +410,14 @@ function LeadForm() {
         <h3>تم تسجيلك بنجاح!</h3>
         <p>سيتم تحويلك تلقائياً إلى متجر التطبيقات لبدء استخدام حسابك، أو يمكنك الضغط هنا للوصول مباشرة إلى التطبيق</p>
         <div className="store-buttons">
-          <a href="https://play.google.com/store/apps/details?id=com.elmadrasah.app" target="_blank" rel="noopener noreferrer" className="store-btn store-google">Google Play</a>
-          <a href="https://apps.apple.com/eg/app/%D8%A7%D9%84%D9%85%D8%AF%D8%B1%D8%B3%D8%A9-el-madrasah/id6755660500" target="_blank" rel="noopener noreferrer" className="store-btn store-apple">App Store</a>
+          <a href="https://play.google.com/store/apps/details?id=com.elmadrasah.app" target="_blank" rel="noopener noreferrer" className="store-btn store-google">
+            <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+            Google Play
+          </a>
+          <a href="https://apps.apple.com/eg/app/%D8%A7%D9%84%D9%85%D8%AF%D8%B1%D8%B3%D8%A9-el-madrasah/id6755660500" target="_blank" rel="noopener noreferrer" className="store-btn store-apple">
+            <svg width="20" height="20" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+            App Store
+          </a>
         </div>
       </div>
     )
@@ -439,7 +444,7 @@ function LeadForm() {
       </div>
       {error && <p className="form-error">{error}</p>}
       <button type="submit" className="btn-submit" disabled={loading}>{loading ? 'جاري الإرسال...' : 'ابدأ التدريس وحقّق دخلاً إضافياً — مجاناً'}</button>
-      <p className="form-privacy">🔒 بياناتك محمية ولن نشاركها</p>
+      <p className="form-privacy">بياناتك محمية ولن نشاركها</p>
       <div className="form-badges">
         <span>✅ مجاني تماماً</span>
         <span>✅ بدون اشتراك شهري</span>
@@ -490,15 +495,12 @@ function App() {
             </p>
             <div className="hero-points">
               <div className="hero-point">
-                <span className="point-icon">💰</span>
                 <span>دخل إضافي مباشر — بلا وسطاء</span>
               </div>
               <div className="hero-point">
-                <span className="point-icon">🌍</span>
                 <span>طلاب من ثلاث دول يبحثون عنك</span>
               </div>
               <div className="hero-point">
-                <span className="point-icon">🤖</span>
                 <span>أدوات ذكاء اصطناعي توفّر عليك ساعات</span>
               </div>
             </div>
@@ -517,18 +519,15 @@ function App() {
           </div>
           <div className="pillars-grid">
             <div className="pillar-card">
-              <div className="pillar-icon">🌍</div>
-              <h3>نوصلك بطلاب من 3 دول</h3>
+                            <h3>نوصلك بطلاب من 3 دول</h3>
               <p>حين تنضم، يظهر ملفك لآلاف الطلاب وأولياء الأمور في مصر والسعودية والسودان. لا تحتاج إلى التسويق لنفسك — الطلاب يأتون إليك.</p>
             </div>
             <div className="pillar-card">
-              <div className="pillar-icon">🤖</div>
-              <h3>نوفّر لك أدوات توفّر وقتك</h3>
+                            <h3>نوفّر لك أدوات توفّر وقتك</h3>
               <p>أنشئ اختبارات بالذكاء الاصطناعي في دقائق. التصحيح تلقائي. تقارير كل طالب جاهزة بنقرة. ساعات العمل الروتيني تتحول إلى ثوانٍ.</p>
             </div>
             <div className="pillar-card">
-              <div className="pillar-icon">💰</div>
-              <h3>نضمن لك دخلاً شفافاً ومباشراً</h3>
+                            <h3>نضمن لك دخلاً شفافاً ومباشراً</h3>
               <p>الطالب يدفع إلكترونياً والمبلغ يظهر في محفظتك فوراً. لا وسطاء ولا تأخير. أموالك تصلك مباشرة.</p>
             </div>
           </div>
@@ -544,33 +543,29 @@ function App() {
           <div className="steps-grid">
             <div className="step-card">
               <div className="step-number">1</div>
-              <div className="step-icon">📝</div>
-              <h3>سجّل بياناتك</h3>
+                            <h3>سجّل بياناتك</h3>
               <p>دقيقتان فقط. مجاني تماماً</p>
             </div>
             <div className="step-connector" />
             <div className="step-card">
               <div className="step-number">2</div>
-              <div className="step-icon">🎯</div>
-              <h3>أنشئ ملفك التعريفي</h3>
+                            <h3>أنشئ ملفك التعريفي</h3>
               <p>أضف خبراتك وأسعارك ومواعيدك. هذا الملف هو واجهتك أمام الطلاب</p>
             </div>
             <div className="step-connector" />
             <div className="step-card">
               <div className="step-number">3</div>
-              <div className="step-icon">🔍</div>
-              <h3>الطلاب يعثرون عليك</h3>
+                            <h3>الطلاب يعثرون عليك</h3>
               <p>ملفك يظهر في سوق المعلمين. يحجزون معك مباشرة</p>
             </div>
             <div className="step-connector" />
             <div className="step-card">
               <div className="step-number">4</div>
-              <div className="step-icon">💰</div>
-              <h3>درّس واحصل على أرباحك</h3>
+                            <h3>درّس واحصل على أرباحك</h3>
               <p>قدّم حصصك أونلاين أو حضورياً. الأرباح تصل فوراً</p>
             </div>
           </div>
-          <p className="steps-note">🎯 لا تحتاج إلى خبرة تقنية. إذا كنت تستطيع استخدام هاتفك، تستطيع استخدام المدرسة.</p>
+          <p className="steps-note">لا تحتاج إلى خبرة تقنية. إذا كنت تستطيع استخدام هاتفك، تستطيع استخدام المدرسة.</p>
         </div>
       </section>
 
@@ -582,37 +577,31 @@ function App() {
           </div>
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon">🏪</div>
-              <h3>ملف تعريفي احترافي</h3>
+                            <h3>ملف تعريفي احترافي</h3>
               <p>صفحتك الرقمية التي يراها كل طالب يبحث عن معلم في تخصصك</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🗓️</div>
-              <h3>جدولة ذكية</h3>
+                            <h3>جدولة ذكية</h3>
               <p>حدّد مواعيدك والطالب يحجز منها. لا تنسيق يدوي</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🤖</div>
-              <h3>اختبارات بالذكاء الاصطناعي</h3>
+                            <h3>اختبارات بالذكاء الاصطناعي</h3>
               <p>أدخل الموضوع والنظام يُولّد اختباراً متكاملاً في دقائق</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">✅</div>
-              <h3>تصحيح تلقائي فوري</h3>
+                            <h3>تصحيح تلقائي فوري</h3>
               <p>النتيجة تظهر مع شرح كل إجابة. لا تصحيح يدوي</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">📊</div>
-              <h3>تقارير أداء لكل طالب</h3>
+                            <h3>تقارير أداء لكل طالب</h3>
               <p>بيانات دقيقة تُساعدك على اتخاذ قرارات تدريسية أفضل</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">💳</div>
-              <h3>محفظة إلكترونية</h3>
+                            <h3>محفظة إلكترونية</h3>
               <p>الطالب يدفع إلكترونياً والمبلغ يصلك مباشرة. سحب في أي وقت</p>
             </div>
           </div>
-          <p className="features-note">💡 كل هذا مجاني عند التسجيل. المنصة تأخذ نسبة بسيطة من الحصص المدفوعة فقط — نربح فقط حين تربح أنت.</p>
+          <p className="features-note">كل هذا مجاني عند التسجيل. المنصة تأخذ نسبة بسيطة من الحصص المدفوعة فقط — نربح فقط حين تربح أنت.</p>
         </div>
       </section>
 
