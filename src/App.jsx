@@ -1,135 +1,444 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 
+const API = {
+  otpRequest: '/api/v1/auth/otp/request',
+  otpVerify: '/api/v1/auth/otp/verify',
+  registerVerify: '/api/v1/auth/v2/register/verify',
+  registerComplete: '/api/v1/auth/v2/register/complete',
+  formData: '/api/v1/auth/school/form-data',
+  stages: '/api/v1/auth/school/stages',
+  grades: '/api/v1/auth/school/levels',
+  subjects: '/api/v1/auth/onboarding/subjects',
+  onboardingStep: '/api/v1/auth/onboarding/step/teaching_info',
+  onboardingComplete: '/api/v1/auth/onboarding/complete',
+}
+
+function MultiSelect({ options, selected, onChange, loading, placeholder }) {
+  if (loading) return <p className="cascade-loading">جاري التحميل...</p>
+  if (!options.length) return null
+  return (
+    <div className="multi-chips">
+      {options.map(opt => (
+        <label
+          key={opt.id}
+          className={`stage-chip ${selected.includes(opt.id) ? 'active' : ''}`}
+        >
+          <input
+            type="checkbox"
+            checked={selected.includes(opt.id)}
+            onChange={() => {
+              onChange(selected.includes(opt.id)
+                ? selected.filter(id => id !== opt.id)
+                : [...selected, opt.id]
+              )
+            }}
+          />
+          {opt.name_ar || opt.name}
+        </label>
+      ))}
+    </div>
+  )
+}
+
 function LeadForm() {
-  const [form, setForm] = useState({
-    name: '', phone: '', email: '', country_id: '', subject_id: '', stages: []
-  })
-  const [submitted, setSubmitted] = useState(false)
+  // Steps: 'phone' → 'otp' → 'info' → 'success'
+  const [step, setStep] = useState('phone')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [token, setToken] = useState('')
+  const submittingRef = useRef(false)
 
-  const countries = [
-    { id: 1, name: 'مصر' },
-    { id: 2, name: 'السعودية' },
-    { id: 3, name: 'السودان' },
-    { id: 4, name: 'أخرى' },
-  ]
-  const subjects = [
-    { id: 1, name: 'الرياضيات' },
-    { id: 2, name: 'الفيزياء' },
-    { id: 3, name: 'الكيمياء' },
-    { id: 4, name: 'اللغة العربية' },
-    { id: 5, name: 'اللغة الإنجليزية' },
-    { id: 6, name: 'العلوم' },
-    { id: 7, name: 'أخرى' },
-  ]
-  const stages = [
-    { id: 1, name: 'ابتدائي' },
-    { id: 2, name: 'إعدادي' },
-    { id: 3, name: 'ثانوي' },
-    { id: 4, name: 'جامعي' },
-  ]
+  // Phone
+  const [phone, setPhone] = useState('')
+  const [countryCode, setCountryCode] = useState('+20')
+  const [countries, setCountries] = useState([])
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [verificationToken, setVerificationToken] = useState('')
 
-  const handleStage = (stageId) => {
-    setForm(prev => ({
-      ...prev,
-      stages: prev.stages.includes(stageId)
-        ? prev.stages.filter(s => s !== stageId)
-        : [...prev.stages, stageId]
-    }))
+  // OTP
+  const [otp, setOtp] = useState('')
+  const [countdown, setCountdown] = useState(0)
+  const otpRef = useRef(null)
+
+  // Name
+  const [firstName, setFirstName] = useState('')
+  const [fatherName, setFatherName] = useState('')
+  const [grandfatherName, setGrandfatherName] = useState('')
+
+  // Cascading data
+  const [systemsOpts, setSystemsOpts] = useState([])
+  const [stagesOpts, setStagesOpts] = useState([])
+  const [gradesOpts, setGradesOpts] = useState([])
+  const [subjectsOpts, setSubjectsOpts] = useState([])
+
+  const [selectedSystems, setSelectedSystems] = useState([])
+  const [selectedStages, setSelectedStages] = useState([])
+  const [selectedGrades, setSelectedGrades] = useState([])
+  const [selectedSubjects, setSelectedSubjects] = useState([])
+
+  const [loadingSystems, setLoadingSystems] = useState(false)
+  const [loadingStages, setLoadingStages] = useState(false)
+  const [loadingGrades, setLoadingGrades] = useState(false)
+  const [loadingSubjects, setLoadingSubjects] = useState(false)
+
+  // Countdown timer
+  useEffect(() => {
+    if (countdown <= 0) return
+    const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [countdown])
+
+  // Fetch countries on mount
+  useEffect(() => {
+    fetch(API.formData, { headers: { Accept: 'application/json' } })
+      .then(r => r.json())
+      .then(d => {
+        setCountries(d.data?.countries || [])
+        setSystemsOpts(d.data?.education_systems || [])
+      })
+      .catch(() => {})
+  }, [])
+
+  // Fetch education systems when entering info step (if not already loaded)
+  useEffect(() => {
+    if (step !== 'info' || systemsOpts.length) return
+    setLoadingSystems(true)
+    fetch(API.formData, { headers: { Accept: 'application/json' } })
+      .then(r => r.json())
+      .then(d => {
+        setSystemsOpts(d.data?.education_systems || [])
+        if (!countries.length) setCountries(d.data?.countries || [])
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSystems(false))
+  }, [step])
+
+  // Fetch stages when systems change
+  useEffect(() => {
+    if (!selectedSystems.length) { setStagesOpts([]); setSelectedStages([]); return }
+    setLoadingStages(true)
+    setSelectedStages([]); setGradesOpts([]); setSelectedGrades([]); setSubjectsOpts([]); setSelectedSubjects([])
+    fetch(API.stages, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ systems: selectedSystems })
+    })
+      .then(r => r.json())
+      .then(d => setStagesOpts(d.data || []))
+      .catch(() => {})
+      .finally(() => setLoadingStages(false))
+  }, [selectedSystems])
+
+  // Fetch grades when stages change
+  useEffect(() => {
+    if (!selectedStages.length) { setGradesOpts([]); setSelectedGrades([]); return }
+    setLoadingGrades(true)
+    setSelectedGrades([]); setSubjectsOpts([]); setSelectedSubjects([])
+    fetch(API.grades, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ stages: selectedStages })
+    })
+      .then(r => r.json())
+      .then(d => {
+        const levels = (d.data || []).flatMap(group => group.levels || [])
+        setGradesOpts(levels)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingGrades(false))
+  }, [selectedStages])
+
+  // Fetch subjects when grades change (needs token)
+  useEffect(() => {
+    if (!selectedGrades.length) { setSubjectsOpts([]); setSelectedSubjects([]); return }
+    setLoadingSubjects(true)
+    setSelectedSubjects([])
+    const params = selectedGrades.map(id => `grade_ids[]=${id}`).join('&')
+    fetch(`${API.subjects}?${params}`, {
+      headers: { Accept: 'application/json', Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(d => {
+        const subjects = d.data?.subjects || d.data || []
+        // Map value/label to id/name for MultiSelect compatibility
+        const mapped = subjects.map(s => ({ id: s.value || s.id, name: s.label || s.name }))
+        setSubjectsOpts(mapped)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSubjects(false))
+  }, [selectedGrades, token])
+
+  const authHeaders = { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` }
+
+  // === Step 1: Request OTP ===
+  const handlePhoneSubmit = async (e) => {
+    e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
+    setLoading(true); setError('')
+    try {
+      const payload = { phone, country_code: countryCode }
+      console.log('OTP Request payload:', payload)
+      const res = await fetch(API.otpRequest, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      console.log('OTP Request response:', data)
+      if (!res.ok) {
+        if (data.errors) { const f = Object.values(data.errors)[0]; throw new Error(Array.isArray(f) ? f[0] : f) }
+        throw new Error(data.message || 'حدث خطأ، حاول مرة أخرى')
+      }
+      setIsNewUser(data.data?.is_new_user || false)
+      setCountdown(300)
+      setStep('otp')
+      setTimeout(() => otpRef.current?.focus(), 100)
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false); submittingRef.current = false }
   }
 
-  const handleSubmit = async (e) => {
+  // === Step 2: Verify OTP → get token ===
+  const handleOtpSubmit = async (e) => {
     e.preventDefault()
-    if (form.stages.length === 0) {
-      setError('يرجى اختيار مرحلة دراسية واحدة على الأقل')
-      return
-    }
-    setLoading(true)
+    if (submittingRef.current) return
+    submittingRef.current = true
+    if (otp.length < 4) { setError('يرجى إدخال رمز التحقق كاملاً'); return }
+    setLoading(true); setError('')
+    try {
+      const payload = { phone, code: otp, country_code: countryCode }
+      const verifyUrl = isNewUser ? API.registerVerify : API.otpVerify
+      console.log('OTP Verify payload:', payload, 'endpoint:', verifyUrl)
+      const res = await fetch(verifyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      console.log('OTP Verify FULL response:', JSON.stringify(data, null, 2))
+      if (!res.ok) throw new Error(data.message || 'رمز التحقق غير صحيح')
+      if (isNewUser && data.data?.verification_token) {
+        // New user — need to complete registration first
+        setVerificationToken(data.data.verification_token)
+        setStep('register')
+      } else {
+        // Existing user — already has auth token
+        const t = data.data?.token || data.data?.access_token || data.token || ''
+        setToken(t)
+        setStep('info')
+      }
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false); submittingRef.current = false }
+  }
+
+  // === Step 2b: Complete Registration (new users) ===
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
+    setLoading(true); setError('')
+    try {
+      const payload = {
+        verification_token: verificationToken,
+        phone,
+        country_code: countryCode,
+        username: phone.replace(/^0/, ''),
+        first_name: firstName,
+      }
+      const res = await fetch(API.registerComplete, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (data.errors) { const f = Object.values(data.errors)[0]; throw new Error(Array.isArray(f) ? f[0] : f) }
+        throw new Error(data.message || 'حدث خطأ في التسجيل')
+      }
+      setToken(data.data?.token || data.token || '')
+      setStep('info')
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false); submittingRef.current = false }
+  }
+
+  // Resend OTP
+  const handleResend = async () => {
+    if (countdown > 0) return
     setError('')
     try {
-      const res = await fetch('/api/v1/auth/register', {
+      await fetch(API.otpRequest, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ phone, country_code: countryCode })
+      })
+      setCountdown(300)
+    } catch { setError('فشل إعادة إرسال الرمز') }
+  }
+
+  // === Step 3: Save onboarding info ===
+  const handleInfoSubmit = async (e) => {
+    e.preventDefault()
+    if (!selectedSystems.length || !selectedStages.length || !selectedGrades.length || !selectedSubjects.length) {
+      setError('يرجى ملء جميع الحقول'); return
+    }
+    setLoading(true); setError('')
+    try {
+      // Save teaching info
+      const res = await fetch(API.onboardingStep, {
+        method: 'POST',
+        headers: authHeaders,
         body: JSON.stringify({
-          name: form.name,
-          phone: form.phone,
-          email: form.email || null,
-          country_id: Number(form.country_id),
-          subject_id: Number(form.subject_id),
-          stages: form.stages,
+          first_name: firstName,
+          father_name: fatherName,
+          grandfather_name: grandfatherName,
+          role: 'teacher',
+          education_systems: selectedSystems,
+          stages: selectedStages,
+          grades: selectedGrades,
+          subjects: selectedSubjects,
         })
       })
       const data = await res.json()
       if (!res.ok) {
-        if (data.errors) {
-          const firstError = Object.values(data.errors)[0]
-          throw new Error(Array.isArray(firstError) ? firstError[0] : firstError)
-        }
+        if (data.errors) { const f = Object.values(data.errors)[0]; throw new Error(Array.isArray(f) ? f[0] : f) }
         throw new Error(data.message || 'حدث خطأ، حاول مرة أخرى')
       }
-      setSubmitted(true)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+      // Complete onboarding
+      await fetch(API.onboardingComplete, { method: 'POST', headers: authHeaders })
+      setStep('success')
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
-  if (submitted) {
+  const maskPhone = (p) => {
+    if (p.length <= 6) return p
+    return p.slice(0, 4) + '****' + p.slice(-3)
+  }
+
+  // ========== RENDER ==========
+
+  // === OTP Step ===
+  if (step === 'otp') {
+    return (
+      <form className="form-card otp-card" onSubmit={handleOtpSubmit}>
+        <div className="otp-icon">📱</div>
+        <h3>أدخل رمز التحقق</h3>
+        <p className="otp-subtitle">تم إرسال رمز التحقق إلى <strong dir="ltr">{maskPhone(phone)}</strong></p>
+        <div className="form-group otp-input-group">
+          <input ref={otpRef} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={4} placeholder="- - - -" className="otp-input" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))} />
+        </div>
+        {error && <p className="form-error">{error}</p>}
+        <button type="submit" className="btn-submit" disabled={loading || otp.length < 4}>{loading ? 'جاري التحقق...' : 'تأكيد'}</button>
+        <div className="otp-resend">
+          {countdown > 0
+            ? <span className="otp-countdown">إعادة الإرسال خلال {countdown} ثانية</span>
+            : <button type="button" className="otp-resend-btn" onClick={handleResend}>إعادة إرسال الرمز</button>
+          }
+        </div>
+        <button type="button" className="otp-back-btn" onClick={() => { setStep('phone'); setError(''); setOtp('') }}>تعديل رقم الهاتف</button>
+      </form>
+    )
+  }
+
+  // === Register Step (new users) ===
+  if (step === 'register') {
+    return (
+      <form className="form-card" onSubmit={handleRegisterSubmit}>
+        <h3>أكمل تسجيلك</h3>
+        <div className="form-group">
+          <input type="text" placeholder="الاسم الأول" required value={firstName} onChange={e => setFirstName(e.target.value)} />
+        </div>
+        {error && <p className="form-error">{error}</p>}
+        <button type="submit" className="btn-submit" disabled={loading || !firstName.trim()}>{loading ? 'جاري التسجيل...' : 'تسجيل'}</button>
+      </form>
+    )
+  }
+
+  // === Info / Onboarding Step ===
+  if (step === 'info') {
+    return (
+      <form className="form-card info-card" onSubmit={handleInfoSubmit}>
+        <h3>أكمل بياناتك</h3>
+
+        <div className="form-group">
+          <input type="text" placeholder="الاسم الأول" required value={firstName} onChange={e => setFirstName(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <input type="text" placeholder="اسم الأب" required value={fatherName} onChange={e => setFatherName(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <input type="text" placeholder="اسم الجد" required value={grandfatherName} onChange={e => setGrandfatherName(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">النظام التعليمي</label>
+          <MultiSelect options={systemsOpts} selected={selectedSystems} onChange={setSelectedSystems} loading={loadingSystems} />
+        </div>
+
+        {selectedSystems.length > 0 && (
+          <div className="form-group">
+            <label className="form-label">المرحلة الدراسية</label>
+            <MultiSelect options={stagesOpts} selected={selectedStages} onChange={setSelectedStages} loading={loadingStages} />
+          </div>
+        )}
+
+        {selectedStages.length > 0 && (
+          <div className="form-group">
+            <label className="form-label">الصفوف الدراسية</label>
+            <MultiSelect options={gradesOpts} selected={selectedGrades} onChange={setSelectedGrades} loading={loadingGrades} />
+          </div>
+        )}
+
+        {selectedGrades.length > 0 && (
+          <div className="form-group">
+            <label className="form-label">المواد</label>
+            <MultiSelect options={subjectsOpts} selected={selectedSubjects} onChange={setSelectedSubjects} loading={loadingSubjects} />
+          </div>
+        )}
+
+        {error && <p className="form-error">{error}</p>}
+        <button type="submit" className="btn-submit" disabled={loading}>{loading ? 'جاري الحفظ...' : 'حفظ'}</button>
+      </form>
+    )
+  }
+
+  // === Success Step ===
+  if (step === 'success') {
     return (
       <div className="form-card form-success">
         <div className="success-icon">🎉</div>
-        <h3>تم تسجيل بياناتك بنجاح!</h3>
-        <p>سيتواصل معك أحد أعضاء فريقنا خلال 24 ساعة لمساعدتك في إعداد ملفك التعريفي.</p>
-        <div className="success-links">
-          <p>في هذه الأثناء:</p>
-          <button className="btn-primary">حمّل تطبيق المعلم</button>
+        <h3>تم تسجيلك بنجاح!</h3>
+        <p>سيتم تحويلك تلقائياً إلى متجر التطبيقات لبدء استخدام حسابك، أو يمكنك الضغط هنا للوصول مباشرة إلى التطبيق</p>
+        <div className="store-buttons">
+          <a href="https://play.google.com/store/apps/details?id=com.elmadrasah.app" target="_blank" rel="noopener noreferrer" className="store-btn store-google">Google Play</a>
+          <a href="https://apps.apple.com/eg/app/%D8%A7%D9%84%D9%85%D8%AF%D8%B1%D8%B3%D8%A9-el-madrasah/id6755660500" target="_blank" rel="noopener noreferrer" className="store-btn store-apple">App Store</a>
         </div>
       </div>
     )
   }
 
+  // === Phone Step ===
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
+    <form className="form-card" onSubmit={handlePhoneSubmit}>
       <h3>سجّل الآن وابدأ التدريس مجاناً</h3>
-      <div className="form-group">
-        <input type="text" placeholder="الاسم الكامل" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <input type="tel" placeholder="رقم الهاتف" required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <input type="email" placeholder="البريد الإلكتروني" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <select required value={form.country_id} onChange={e => setForm({ ...form, country_id: e.target.value })}>
-          <option value="">الدولة</option>
-          {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+      <div className="form-group phone-group">
+        <select className="country-select" value={countryCode} onChange={e => setCountryCode(e.target.value)}>
+          {countries.length > 0 ? countries.map(c => (
+            <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+          )) : (
+            <>
+              <option value="+20">مصر (+20)</option>
+              <option value="+966">السعودية (+966)</option>
+              <option value="+249">السودان (+249)</option>
+              <option value="+971">الإمارات (+971)</option>
+            </>
+          )}
         </select>
-      </div>
-      <div className="form-group">
-        <select required value={form.subject_id} onChange={e => setForm({ ...form, subject_id: e.target.value })}>
-          <option value="">التخصص</option>
-          {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-      </div>
-      <div className="form-group">
-        <label className="form-label">المرحلة الدراسية</label>
-        <div className="stages-grid">
-          {stages.map(stage => (
-            <label key={stage.id} className={`stage-chip ${form.stages.includes(stage.id) ? 'active' : ''}`}>
-              <input type="checkbox" checked={form.stages.includes(stage.id)} onChange={() => handleStage(stage.id)} />
-              {stage.name}
-            </label>
-          ))}
-        </div>
+        <input type="tel" placeholder="رقم الهاتف" required value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, ''))} dir="ltr" />
       </div>
       {error && <p className="form-error">{error}</p>}
-      <button type="submit" className="btn-submit" disabled={loading}>
-        {loading ? 'جاري التسجيل...' : 'ابدأ التدريس وحقّق دخلاً إضافياً — مجاناً'}
-      </button>
+      <button type="submit" className="btn-submit" disabled={loading}>{loading ? 'جاري الإرسال...' : 'ابدأ التدريس وحقّق دخلاً إضافياً — مجاناً'}</button>
       <p className="form-privacy">🔒 بياناتك محمية ولن نشاركها</p>
       <div className="form-badges">
         <span>✅ مجاني تماماً</span>

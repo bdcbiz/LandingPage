@@ -173,6 +173,37 @@
   margin-bottom: 1rem;
 }
 
+.phone-group {
+  display: flex;
+  gap: 0.5rem;
+  direction: ltr;
+}
+
+.country-select {
+  width: 160px !important;
+  flex-shrink: 0;
+  padding: 0.8rem 0.5rem;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-family: 'Cairo', sans-serif;
+  color: #1d1d1f;
+  background: #fafafa;
+  transition: border-color 0.3s;
+  outline: none;
+  cursor: pointer;
+  direction: rtl;
+}
+
+.country-select:focus {
+  border-color: #3b82f6;
+  background: #fff;
+}
+
+.phone-group input {
+  flex: 1;
+}
+
 .form-group input,
 .form-group select {
   width: 100%;
@@ -285,6 +316,145 @@
   margin-top: 0.8rem;
   font-size: 0.78rem;
   color: #6e6e73;
+}
+
+/* ===== OTP STEP ===== */
+.otp-card {
+  text-align: center;
+}
+
+.otp-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.otp-subtitle {
+  color: #6e6e73;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.otp-subtitle strong {
+  color: #1d1d1f;
+  font-weight: 700;
+}
+
+.otp-input-group {
+  display: flex;
+  justify-content: center;
+}
+
+.otp-input {
+  width: 180px !important;
+  text-align: center;
+  font-size: 1.8rem !important;
+  font-weight: 700;
+  letter-spacing: 0.8em;
+  padding: 0.8rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 14px;
+  background: #fafafa;
+  font-family: 'Cairo', sans-serif;
+  color: #1d1d1f;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.otp-input:focus {
+  border-color: #3b82f6;
+  background: #fff;
+}
+
+.otp-input::placeholder {
+  letter-spacing: 0.5em;
+  font-size: 1.4rem;
+  color: #ccc;
+}
+
+.otp-resend {
+  margin-top: 1.2rem;
+}
+
+.otp-countdown {
+  font-size: 0.88rem;
+  color: #aaa;
+}
+
+.otp-resend-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  padding: 0.3rem 0.6rem;
+  transition: color 0.3s;
+}
+
+.otp-resend-btn:hover {
+  color: #2563eb;
+}
+
+.otp-back-btn {
+  display: block;
+  margin: 0.8rem auto 0;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  transition: color 0.3s;
+}
+
+.otp-back-btn:hover {
+  color: #6e6e73;
+}
+
+/* ===== INFO / ONBOARDING STEP ===== */
+.info-card {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.multi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cascade-loading {
+  color: #aaa;
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+/* ===== STORE BUTTONS ===== */
+.store-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.store-btn {
+  padding: 0.7rem 2rem;
+  background: #1d1d1f;
+  color: #fff;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+
+.store-btn:hover {
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Form Success */
