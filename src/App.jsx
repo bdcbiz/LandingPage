@@ -515,8 +515,27 @@ function LeadForm() {
 
 function FAQItem({ question, answer }) {
   const [open, setOpen] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const itemRef = useRef(null)
+
+  useEffect(() => {
+    const el = itemRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.15 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <div className={`faq-item reveal ${open ? 'open' : ''}`} onClick={() => setOpen(!open)}>
+    <div ref={itemRef} className={`faq-item reveal${revealed ? ' revealed' : ''} ${open ? 'open' : ''}`} onClick={() => setOpen(!open)}>
       <div className="faq-question">
         <span>{question}</span>
         <span className="faq-toggle">{open ? '−' : '+'}</span>
