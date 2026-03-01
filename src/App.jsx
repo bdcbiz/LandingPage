@@ -540,7 +540,7 @@ function FAQItem({ question, answer }) {
         <span>{question}</span>
         <span className="faq-toggle">{open ? '−' : '+'}</span>
       </div>
-      {open && <div className="faq-answer">{answer}</div>}
+      <div className="faq-answer">{answer}</div>
     </div>
   )
 }
