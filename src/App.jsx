@@ -546,6 +546,7 @@ function FAQItem({ question, answer }) {
 }
 
 function App() {
+  const [menuOpen, setMenuOpen] = useState(false)
   const offerRef = useScrollReveal()
   const howRef = useScrollReveal()
   const featuresRef = useScrollReveal()
@@ -559,15 +560,22 @@ function App() {
       <nav className="navbar">
         <div className="nav-container">
           <div className="logo">المدرسة</div>
-          <div className="nav-links">
-            <a href="#offer">ماذا نقدّم</a>
-            <a href="#how">كيف يعمل</a>
-            <a href="#features">المميزات</a>
-            <a href="#faq">الأسئلة الشائعة</a>
+          <div className={`nav-links${menuOpen ? ' nav-open' : ''}`}>
+            <a href="#offer" onClick={() => setMenuOpen(false)}>ماذا نقدّم</a>
+            <a href="#how" onClick={() => setMenuOpen(false)}>كيف يعمل</a>
+            <a href="#features" onClick={() => setMenuOpen(false)}>المميزات</a>
+            <a href="#faq" onClick={() => setMenuOpen(false)}>الأسئلة الشائعة</a>
+            <a href="#register" className="nav-cta nav-cta-mobile" onClick={() => setMenuOpen(false)}>سجّل مجاناً</a>
           </div>
-          <a href="#register" className="nav-cta">سجّل مجاناً</a>
+          <a href="#register" className="nav-cta nav-cta-desktop">سجّل مجاناً</a>
+          <button className={`hamburger${menuOpen ? ' hamburger-open' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="القائمة">
+            <span />
+            <span />
+            <span />
+          </button>
         </div>
       </nav>
+      {menuOpen && <div className="nav-overlay" onClick={() => setMenuOpen(false)} />}
 
       {/* ===== 1. Hero ===== */}
       <section className="hero" id="home">
