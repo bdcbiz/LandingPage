@@ -545,6 +545,19 @@ function FAQItem({ question, answer }) {
   )
 }
 
+function FooterCol({ title, children }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={`footer-col footer-accordion${open ? ' footer-col-open' : ''}`}>
+      <h4 onClick={() => setOpen(!open)}>
+        {title}
+        <span className="footer-arrow">›</span>
+      </h4>
+      <div className="footer-links">{children}</div>
+    </div>
+  )
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const offerRef = useScrollReveal()
@@ -781,24 +794,21 @@ function App() {
               <div className="footer-logo">المدرسة</div>
               <p className="footer-desc">منصة تعليمية تربط المعلمين بالطلاب في مصر والسعودية والسودان.</p>
             </div>
-            <div className="footer-col">
-              <h4>المنصة</h4>
+            <FooterCol title="المنصة">
               <a href="#features">المميزات</a>
               <a href="#how">كيف يعمل</a>
               <a href="#faq">الأسئلة الشائعة</a>
-            </div>
-            <div className="footer-col">
-              <h4>الدعم</h4>
+            </FooterCol>
+            <FooterCol title="الدعم">
               <a href="#register">سجّل كمعلم</a>
               <a href="#">سياسة الخصوصية</a>
               <a href="#">شروط الاستخدام</a>
-            </div>
-            <div className="footer-col">
-              <h4>تابعنا</h4>
+            </FooterCol>
+            <FooterCol title="تابعنا">
               <a href="#">تويتر</a>
               <a href="#">فيسبوك</a>
               <a href="#">إنستغرام</a>
-            </div>
+            </FooterCol>
           </div>
           <div className="footer-bottom">
             <p>&copy; 2026 المدرسة. جميع الحقوق محفوظة.</p>
