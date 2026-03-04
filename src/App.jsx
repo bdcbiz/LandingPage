@@ -487,11 +487,7 @@ function LeadForm() {
       <h3>سجّل الآن وابدأ التدريس مجاناً</h3>
       <div className="form-group phone-group">
         <select className="country-select" value={countryCode} onChange={e => setCountryCode(e.target.value)}>
-          {countries.length > 0 ? countries.map(c => (
-            <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
-          )) : (
-            <option value="+249">السودان (+249)</option>
-          )}
+          <option value="+249">السودان (+249)</option>
         </select>
         <input type="tel" placeholder="رقم الهاتف" required value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, ''))} dir="ltr" />
       </div>
