@@ -93,7 +93,7 @@ function LeadForm() {
 
   // Phone
   const [phone, setPhone] = useState('')
-  const [countryCode, setCountryCode] = useState('+20')
+  const [countryCode, setCountryCode] = useState('+249')
   const [countries, setCountries] = useState([])
   const [isNewUser, setIsNewUser] = useState(false)
   const [verificationToken, setVerificationToken] = useState('')
@@ -490,12 +490,7 @@ function LeadForm() {
           {countries.length > 0 ? countries.map(c => (
             <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
           )) : (
-            <>
-              <option value="+20">مصر (+20)</option>
-              <option value="+966">السعودية (+966)</option>
-              <option value="+249">السودان (+249)</option>
-              <option value="+971">الإمارات (+971)</option>
-            </>
+            <option value="+249">السودان (+249)</option>
           )}
         </select>
         <input type="tel" placeholder="رقم الهاتف" required value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, ''))} dir="ltr" />
