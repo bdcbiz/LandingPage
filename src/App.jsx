@@ -690,50 +690,6 @@ function App() {
         </div>
       </section>
 
-      {/* ===== 5. شهادات المعلمين ===== */}
-      <section className="testimonials-section" id="testimonials" ref={testimonialsRef}>
-        <div className="section-container">
-          <div className="section-header reveal">
-            <h2>معلمون بدأوا مثلك. واليوم لديهم طلاب ودخل إضافي.</h2>
-          </div>
-          <div className="testimonials-grid reveal-stagger">
-            <div className="testimonial-card reveal">
-              <div className="testimonial-quote">"</div>
-              <p>انضممت للمنصة وأنا متردد، لكن خلال أسبوعين حصلت على أول 5 طلاب. الآن لديّ دخل إضافي ثابت بجانب وظيفتي.</p>
-              <div className="testimonial-author">
-                <div className="author-avatar">أ</div>
-                <div>
-                  <h4>أحمد محمود</h4>
-                  <span>معلم رياضيات — مصر</span>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-card reveal">
-              <div className="testimonial-quote">"</div>
-              <p>أدوات الذكاء الاصطناعي وفّرت عليّ ساعات كل أسبوع. أنشئ الاختبارات في دقائق بدل ساعات والتصحيح تلقائي.</p>
-              <div className="testimonial-author">
-                <div className="author-avatar">س</div>
-                <div>
-                  <h4>سارة العتيبي</h4>
-                  <span>معلمة لغة إنجليزية — السعودية</span>
-                </div>
-              </div>
-            </div>
-            <div className="testimonial-card reveal">
-              <div className="testimonial-quote">"</div>
-              <p>المنصة سهلة جداً. الطلاب يحجزون معي مباشرة والأرباح تصل لمحفظتي فوراً. أفضل قرار اتخذته.</p>
-              <div className="testimonial-author">
-                <div className="author-avatar">م</div>
-                <div>
-                  <h4>محمد عبدالله</h4>
-                  <span>معلم فيزياء — السودان</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ===== 6. الأسئلة الشائعة ===== */}
       <section className="faq-section" id="faq" ref={faqRef}>
         <div className="section-container">
