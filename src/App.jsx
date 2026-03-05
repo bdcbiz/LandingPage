@@ -662,6 +662,34 @@ function App() {
         </div>
       </section>
 
+      {/* ===== 4. نظام النقاط ===== */}
+      <section className="features" id="features" ref={featuresRef}>
+        <div className="section-container">
+          <div className="section-header reveal">
+            <p>نظام النقاط</p>
+            <h2>كلما درّست،<br />كلما ربحت أكثر.</h2>
+            <p>كل حصة تُدرّسها تمنحك نقاطاً. كل تقييم إيجابي يُضيف نقاطاً. النقاط تفتح لك أبواباً حقيقية.</p>
+          </div>
+          <div className="pillars-grid reveal-stagger">
+            <div className="pillar-card reveal">
+              <div className="pillar-icon">🥇</div>
+              <h3>الصدارة في سوق المعلمين</h3>
+              <p>كلما ارتفع رصيدك، كلما ظهر ملفك أولاً — طلاب أكثر تلقائياً.</p>
+            </div>
+            <div className="pillar-card reveal">
+              <div className="pillar-icon">🎟️</div>
+              <h3>كوبونات خصم بقيمة حقيقية</h3>
+              <p>استبدل نقاطك بقسائم شرائية حصرية من أرقى الأماكن والعلامات التجارية التي عقدنا معها شراكات استراتيجية لأجلك.</p>
+            </div>
+            <div className="pillar-card reveal">
+              <div className="pillar-icon">📣</div>
+              <h3>تسويق موسّع مجاناً</h3>
+              <p>المعلمون في المستويات العليا يحصلون على حملات إضافية على نفقة المنصة.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ===== 5. شهادات المعلمين ===== */}
       <section className="testimonials-section" id="testimonials" ref={testimonialsRef}>
         <div className="section-container">
