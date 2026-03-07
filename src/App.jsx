@@ -592,7 +592,7 @@ function App() {
                 <span>مجاني تماماً عند التسجيل</span>
               </div>
               <div className="hero-point">
-                <span>15% فقط من الحصص المدفوعة — لا شيء غير ذلك</span>
+                <span><span dir="ltr">15%</span> فقط من الحصص المدفوعة — لا شيء غير ذلك</span>
               </div>
               <div className="hero-point">
                 <span>طلابك يجدونك — لا تحتاج لتسويق نفسك</span>
